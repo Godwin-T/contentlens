@@ -26,7 +26,7 @@ class Settings(BaseSettings):
     # CORS settings
     CORS_ORIGINS: list[str] = ["http://localhost:3000", "http://localhost:8000"]
 
-    BASE_DIR: str = os.environ.get("DATABASE_URL")
+    BASE_DIR: str = os.environ.get("DATABASE_URL", default="./database")
     model_config = SettingsConfigDict(case_sensitive=True)
 
 
