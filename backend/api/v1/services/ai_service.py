@@ -1,13 +1,10 @@
 import os
-
 from fastapi import FastAPI
-from fastapi.staticfiles import StaticFiles
-
-from api.ai_core.config import COLLECTION_NAME, STATIC_DIR
-from api.ai_core.neural_searcher import NeuralSearcher
-from api.ai_core.text_searcher import TextSearcher
-
 from fastapi.middleware.cors import CORSMiddleware
+
+from api.ai_core.config import COLLECTION_NAME
+from api.ai_core.text_searcher import TextSearcher
+from api.ai_core.neural_searcher import NeuralSearcher
 
 app = FastAPI()
 
