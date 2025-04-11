@@ -2,6 +2,7 @@
 from fastapi import APIRouter, HTTPException, Depends
 from api.dependency import verify_admin
 from api.v1.services.blog_service import get_all_posts, get_post_by_id, create_blog_post
+from api.v1.services.ai_service import read_item
 from api.v1.schemas.blog import BlogPostCreate, BlogPostResponse
 
 router = APIRouter(prefix="/blog", tags=["Blog"])
@@ -12,7 +13,7 @@ def list_all_blog_posts():
     return get_all_posts()
 
 
-@router.get("/{post_id}")
+@router.get("/search/{post_id}")
 def get_blog_post(post_id: int):
     post = get_post_by_id(post_id)
     if not post:
@@ -26,3 +27,8 @@ def get_blog_post(post_id: int):
 def create_blog(blog: BlogPostCreate):
     new_post = create_blog_post(blog)
     return new_post
+
+
+@router.get("/ai-search")
+def search_item(q: str, neural: bool = True):
+    return read_item(q, neural)
