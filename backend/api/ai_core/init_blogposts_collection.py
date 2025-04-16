@@ -26,36 +26,43 @@ def upload_or_update_embeddings():
 
     # Get blog posts
     blogposts = get_all_posts()
-    
+
     # Initialize text splitter for chunking
     text_splitter = RecursiveCharacterTextSplitter(
         chunk_size=1000,  # Characters per chunk
         chunk_overlap=100,  # Overlap between chunks
-        separators=["\n\n", "\n", " ", ""]  # Split by paragraphs, then lines, then words
+        separators=[
+            "\n\n",
+            "\n",
+            " ",
+            "",
+        ],  # Split by paragraphs, then lines, then words
     )
-    
+
     # Process each blog post and chunk it
     all_chunks = []
     all_metadata = []
     all_ids = []
-    
+
     chunk_id = 0  # Global counter for unique chunk IDs
     for post in blogposts:
         # Split the content into chunks
         chunks = text_splitter.split_text(post.content)
-        
+
         # Create metadata for each chunk
         for i, chunk in enumerate(chunks):
             chunk_id += 1
             all_chunks.append(chunk)
-            all_metadata.append({
-                "original_id": post.id,
-                "title": post.title,
-                "chunk_index": i,
-                "chunk_count": len(chunks),
-                # Store the chunk text in page_content for LangChain compatibility
-                "page_content": chunk
-            })
+            all_metadata.append(
+                {
+                    "original_id": post.id,
+                    "title": post.title,
+                    "chunk_index": i,
+                    "chunk_count": len(chunks),
+                    # Store the chunk text in page_content for LangChain compatibility
+                    "page_content": chunk,
+                }
+            )
             all_ids.append(chunk_id)  # Use a unique ID for each chunk
 
     if not collection_exists:
@@ -91,7 +98,9 @@ def upload_or_update_embeddings():
             ids=tqdm(all_ids),
             parallel=6,
         )
-        print(f"Created collection {COLLECTION_NAME} with {len(all_chunks)} chunked records")
+        print(
+            f"Created collection {COLLECTION_NAME} with {len(all_chunks)} chunked records"
+        )
     else:
         # Collection exists, so we need to update
         # Get existing points to determine what's new and what needs updating
@@ -109,7 +118,7 @@ def upload_or_update_embeddings():
 
         # Split data into new records and updates
         new_indices = []
-        
+
         for idx, id_val in enumerate(all_ids):
             if id_val not in existing_ids:
                 new_indices.append(idx)
@@ -138,18 +147,18 @@ def use_with_langchain():
     """Example of how to use the created collection with LangChain"""
     from langchain_huggingface import HuggingFaceEmbeddings
     from langchain_qdrant import QdrantVectorStore
-    
+
     # Initialize the embedding model
     embedding_model = HuggingFaceEmbeddings(
         model_name="sentence-transformers/all-MiniLM-L6-v2"
     )
-    
+
     # Connect to Qdrant
     client = QdrantClient(
         url=QDRANT_URL,
         api_key=QDRANT_API_KEY,
     )
-    
+
     # Create the vector store
     vector_store = QdrantVectorStore(
         client=client,
@@ -157,15 +166,15 @@ def use_with_langchain():
         embedding=embedding_model,
         content_payload_key="page_content",  # Use the field we stored our text in
     )
-    
+
     # Example search
     query = "What is machine learning?"
     docs = vector_store.similarity_search(query, k=4)
-    
+
     # Print results
     for i, doc in enumerate(docs):
         print(f"Document {i+1}:\n{doc.page_content}\n{'-' * 50}")
-    
+
     return vector_store
 
 

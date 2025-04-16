@@ -20,6 +20,7 @@ class BlogPostResponse(BlogPostBase):
     class Config:
         from_attributes = True
 
+
 class RetrievalRequest(BaseModel):
     article_id: str
     query: Optional[str] = None
@@ -27,9 +28,11 @@ class RetrievalRequest(BaseModel):
     # search_type: str = "similarity"
     # score_threshold: Optional[float] = None
 
+
 class DocumentChunk(BaseModel):
     content: str
     metadata: dict
+
 
 class RetrievalResponse(BaseModel):
     chunks: List[DocumentChunk]
