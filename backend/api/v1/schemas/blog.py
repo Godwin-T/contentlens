@@ -7,6 +7,13 @@ from typing import List, Optional
 class BlogPostBase(BaseModel):
     title: str
     content: str
+    description: str
+    author: str
+    published: str
+    readTime: str
+    slug: str
+    category: str
+    image: str
 
 
 class BlogPostCreate(BlogPostBase):
@@ -15,7 +22,7 @@ class BlogPostCreate(BlogPostBase):
 
 class BlogPostResponse(BlogPostBase):
     id: int
-    created_at: datetime
+    date: datetime
 
     class Config:
         from_attributes = True
