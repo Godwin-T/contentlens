@@ -65,5 +65,5 @@ def rag_chat(user_id: str, article_id: str, query: str):
 
 
 @router.get("/reset-conn")
-def reset_conversation(user_id: str, article_id: str):
+def reset(user_id: str, article_id: str):
     return reset_conversation(user_id, article_id)
