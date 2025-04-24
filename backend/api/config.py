@@ -16,7 +16,9 @@ class Settings(BaseSettings):
     DB_NAME: str = os.environ.get("DB_NAME", default="postgres")
     DB_TYPE: str = os.environ.get("DB_TYPE", default="postgresql")
 
-    DATABASE_URL: str = os.environ.get("DATABASE_URL", "sqlite://databes/test.db")
+    DATABASE_URL: str = os.environ.get(
+        "DATABASE_URL", "sqlite:///..databases/blogposts.db"
+    )
 
     # JWT settings
     SECRET_KEY: str = os.environ.get("SECRET_KEY", "supersecretkey")
@@ -26,7 +28,7 @@ class Settings(BaseSettings):
     # CORS settings
     CORS_ORIGINS: list[str] = ["http://localhost:3000", "http://localhost:8000"]
 
-    BASE_DIR: str = os.environ.get("DATABASE_URL", default="./database")
+    BASE_DIR: str = os.environ.get("DATABASE_URL", default="../databases")
     model_config = SettingsConfigDict(case_sensitive=True)
 
 
