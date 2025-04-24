@@ -22,7 +22,7 @@ def get_db_engine(test_mode: bool = False):
         DATABASE_URL = BASE_PATH + "/"
 
         if test_mode:
-            DATABASE_URL = BASE_PATH + "test.db"
+            DATABASE_URL = BASE_PATH + "blogposts.db"
 
             return create_engine(
                 DATABASE_URL, connect_args={"check_same_thread": False}
