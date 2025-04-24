@@ -1,10 +1,16 @@
 import os
 from dotenv import load_dotenv
+
+# from api.ai_core.prompt import answer_prompt, standalone_question_prompt
 from langchain.memory import ConversationBufferMemory
-from langchain_community.chat_message_histories import RedisChatMessageHistory
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain.chains import ConversationalRetrievalChain
-from langchain.prompts import PromptTemplate, ChatPromptTemplate
+from langchain_community.chat_message_histories import RedisChatMessageHistory
+from api.ai_core.prompt import create_answer_prompt, create_standalone_question_prompt
+
+# During development - use prompts without versioning
+answer_prompt = create_answer_prompt(language="english")
+standalone_question_prompt = create_standalone_question_prompt()
 
 
 class ConversationalRetrievalBot:
@@ -79,31 +85,6 @@ class ConversationalRetrievalBot:
         )
         return memory
 
-    def _answer_template(self, language="english"):
-        """
-        Create a template for answering questions.
-
-        Args:
-            language (str, optional): Language for the response. Defaults to "english".
-
-        Returns:
-            str: Template string.
-        """
-        template = f"""Answer the question at the end, using only the following context (delimited by <context></context>).
-        Your answer must be in the language at the end. 
-
-        <context>
-        {{chat_history}}
-
-        {{context}} 
-        </context>
-
-        Question: {{question}}
-
-        Language: {language}.
-        """
-        return template
-
     def get_chain_for_user(self, session_id, retriever, language="english"):
         """
         Get or create a conversational chain for a specific user.
@@ -122,23 +103,6 @@ class ConversationalRetrievalBot:
 
         # Create user-specific memory
         memory = self._create_memory(session_id)
-
-        # Create standalone question prompt
-        standalone_question_prompt = PromptTemplate(
-            input_variables=["chat_history", "question"],
-            template="""Given the following conversation and a follow up question,
-            rephrase the follow up question to be a standalone question, in its original language.
-            
-            Chat History:
-            {chat_history}
-            Follow Up Input: {question}
-            Standalone question:""",
-        )
-
-        # Create answer prompt
-        answer_prompt = ChatPromptTemplate.from_template(
-            self._answer_template(language=language)
-        )
 
         # Create the chain
         chain = ConversationalRetrievalChain.from_llm(
