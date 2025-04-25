@@ -12,7 +12,7 @@ from api.v1.services.ai_service import (
 )
 from api.v1.schemas.blog import BlogPostCreate, BlogPostResponse, RetrievalRequest
 
-router = APIRouter(prefix="/blog", tags=["Blog"])
+router = APIRouter(prefix="/api/blog", tags=["Blog"])
 
 
 @router.get("/")
