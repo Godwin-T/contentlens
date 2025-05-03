@@ -12,12 +12,17 @@ from api.v1.services.ai_service import (
 )
 from api.v1.schemas.blog import BlogPostCreate, BlogPostResponse, RetrievalRequest
 
-router = APIRouter(prefix="/api/blog", tags=["Blog"])
+router = APIRouter(prefix="/api/v1", tags=["Blog"])
 
 
 @router.get("/")
 def list_all_blog_posts():
     return get_all_posts()
+
+
+@router.get("/health")
+def health():
+    return {"status", "ok"}
 
 
 @router.get("/search/{post_id}")
@@ -41,12 +46,12 @@ def search_item(q: str, neural: bool = True):
     return read_item(q, neural)
 
 
-@router.post("/retrieve")
-def retrieve_blog_documents(request: RetrievalRequest):
-    try:
-        return retrieve_documents(request)
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+# @router.post("/retrieve")
+# def retrieve_blog_documents(request: RetrievalRequest):
+#     try:
+#         return retrieve_documents(request)
+#     except Exception as e:
+#         raise HTTPException(status_code=500, detail=str(e))
 
 
 @router.post("/invalidate-cache/{article_id}")
@@ -59,7 +64,7 @@ def get_stats():
     return get_retrieval_stats()
 
 
-@router.post("/chat")
+@router.post("/ask")
 def rag_chat(user_id: str, article_id: str, query: str):
     return chat(user_id, article_id, query)
 
