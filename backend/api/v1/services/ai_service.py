@@ -5,8 +5,6 @@ from api.ai_core.retriever import RetrievalService
 from api.ai_core.chat_helper import ChatbotService
 from api.ai_core.config import COLLECTION_NAME, QDRANT_API_KEY, QDRANT_URL
 from api.v1.schemas.blog import RetrievalRequest
-from langchain.schema import Document
-from typing import List
 
 
 # Initialize services
