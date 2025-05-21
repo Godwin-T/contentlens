@@ -44,3 +44,9 @@ class DocumentChunk(BaseModel):
 class RetrievalResponse(BaseModel):
     chunks: List[DocumentChunk]
     cache_hit: bool = False
+
+
+class ChatRequest(BaseModel):
+    user_id: str
+    article_id: str
+    query: str

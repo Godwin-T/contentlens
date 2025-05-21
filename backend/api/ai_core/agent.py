@@ -1,8 +1,9 @@
 # retrieval_service.py with caching
 
 import os
-import redis
 import json
+import opik
+import redis
 import hashlib
 
 from dotenv import load_dotenv
@@ -15,6 +16,13 @@ from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain.chains import ConversationalRetrievalChain
 from langchain_community.chat_message_histories import RedisChatMessageHistory
 from api.ai_core.prompt import create_answer_prompt, create_standalone_question_prompt
+from api.ai_core.config import QDRANT_URL, QDRANT_API_KEY, COLLECTION_NAME
+
+
+load_dotenv()
+os.environ["OPIK_API_KEY"] = os.getenv("OPIK_API_KEY")
+os.environ["OPIK_WORKSPACE"] = os.getenv("OPIK_WORKSPACE")
+os.environ["OPIK_PROJECT_NAME"] = os.getenv("OPIK_PROJECT_NAME")
 
 
 class RetrievalService:
@@ -71,6 +79,7 @@ class RetrievalService:
             vector_name="fast-all-minilm-l6-v2",
         )
 
+    @opik.track(capture_input=True, capture_output=True)
     def vectorstore_backed_retriever(
         self, article_id, search_type="similarity", k=4, score_threshold=None
     ):
@@ -105,6 +114,7 @@ class RetrievalService:
         )
         return retriever
 
+    @opik.track(capture_input=False, capture_output=False)
     def _generate_cache_key(self, article_id):
         """Generate a deterministic cache key from request parameters.
 
@@ -118,6 +128,7 @@ class RetrievalService:
         # Create a hash to keep the key size manageable
         return f"retrieval:{hashlib.md5(key_string.encode()).hexdigest()}"
 
+    @opik.track(capture_input=True, capture_output=True)
     def retrieve_documents(self, request):
         """Retrieve documents for a given article ID, with caching.
 
@@ -162,6 +173,7 @@ class RetrievalService:
             # Return the error
             raise Exception(f"Error in document retrieval: {str(e)}")
 
+    @opik.track(capture_input=True, capture_output=True)
     def invalidate_cache(self, article_id):
         """Invalidate all cached results for a specific article.
 
@@ -264,6 +276,7 @@ class ConversationalRetrievalBot:
         self.answer_prompt = create_answer_prompt(language="english")
         self.standalone_question_prompt = create_standalone_question_prompt()
 
+    @opik.track(capture_input=False, capture_output=False)
     def _create_memory(self, session_id):
         """
         Create memory specific to a user session.
@@ -286,6 +299,7 @@ class ConversationalRetrievalBot:
         )
         return memory
 
+    @opik.track(capture_input=True, capture_output=True)
     def get_chain_for_user(self, session_id, retriever, language="english"):
         """
         Get or create a conversational chain for a specific user.
@@ -323,6 +337,7 @@ class ConversationalRetrievalBot:
 
         return chain
 
+    @opik.track(capture_input=True, capture_output=True)
     def process_query(self, session_id, question, retriever, language="english"):
         """
         Process a user query and return the response.
@@ -339,6 +354,7 @@ class ConversationalRetrievalBot:
         chain = self.get_chain_for_user(session_id, retriever, language)
         return chain.invoke({"question": question})
 
+    @opik.track(capture_input=True, capture_output=False)
     def clear_user_history(self, session_id):
         """
         Clear conversation history for a specific user.
@@ -362,7 +378,7 @@ class ChatbotService:
     Service class that uses the ConversationalRetrievalBot to provide chatbot functionality.
     """
 
-    def __init__(self, retriever, redis_url=None):
+    def __init__(self, redis_url=None):
         """
         Initialize the chatbot service.
 
@@ -371,9 +387,13 @@ class ChatbotService:
         """
         # Initialize the conversational bot
         self.bot = ConversationalRetrievalBot(redis_url=redis_url)
-        # Store the global retriever service
-        self.retriever = retriever
+        self.retriever = RetrievalService(
+            qdrant_url=QDRANT_URL,
+            qdrant_api_key=QDRANT_API_KEY,
+            collection_name=COLLECTION_NAME,
+        )
 
+    @opik.track(capture_input=True, capture_output=True)
     def chat(
         self, user_id: str, article_id: str, message: str, language: str = "english"
     ):
@@ -417,6 +437,7 @@ class ChatbotService:
         # Return the full response including answer and source documents
         return {"answer": response["answer"], "chat_history": processed_history}
 
+    @opik.track(capture_input=True, capture_output=False)
     def reset_conversation(self, user_id: str, article_id: str):
         """
         Reset the conversation history for a user-article pair.

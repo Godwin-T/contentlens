@@ -1,21 +1,23 @@
-# api/v1/services/ai_service.py
-from api.ai_core.neural_searcher import NeuralSearcher
-from api.ai_core.text_searcher import TextSearcher
-from api.ai_core.retriever import RetrievalService
-from api.ai_core.chat_helper import ChatbotService
-from api.ai_core.config import COLLECTION_NAME, QDRANT_API_KEY, QDRANT_URL
+import os
+from dotenv import load_dotenv
 from api.v1.schemas.blog import RetrievalRequest
+from api.ai_core.agent import RetrievalService, ChatbotService
+from api.ai_core.postsearch import TextSearcher, NeuralSearcher
+from api.ai_core.config import COLLECTION_NAME, QDRANT_API_KEY, QDRANT_URL
 
+load_dotenv()
 
 # Initialize services
+
+# retriever = RetrievalService(
+#     qdrant_url=QDRANT_URL,
+#     qdrant_api_key=QDRANT_API_KEY,
+#     collection_name=COLLECTION_NAME,
+# )
+redis_url = os.getenv("REDIS_URL")
+chatbot = ChatbotService(redis_url=redis_url)
 neural_searcher = NeuralSearcher(collection_name=COLLECTION_NAME)
 text_searcher = TextSearcher(collection_name=COLLECTION_NAME)
-retriever = RetrievalService(
-    qdrant_url=QDRANT_URL,
-    qdrant_api_key=QDRANT_API_KEY,
-    collection_name=COLLECTION_NAME,
-)
-chatbot = ChatbotService(retriever, redis_url="redis://127.0.0.1:6379")
 
 
 def read_item(q: str, neural: bool = True):
@@ -26,19 +28,19 @@ def read_item(q: str, neural: bool = True):
     }
 
 
-def retrieve_documents(request: RetrievalRequest):
-    try:
-        return retriever.retrieve_documents(request)
-    except Exception as e:
-        raise Exception(f"Error retrieving documents: {str(e)}")
+# def retrieve_documents(request: RetrievalRequest):
+#     try:
+#         return retriever.retrieve_documents(request)
+#     except Exception as e:
+#         raise Exception(f"Error retrieving documents: {str(e)}")
 
 
-def invalidate_retrieval_cache(article_id: str):
-    return retriever.invalidate_cache(article_id)
+# def invalidate_retrieval_cache(article_id: str):
+#     return retriever.invalidate_cache(article_id)
 
 
-def get_retrieval_stats():
-    return retriever.get_stats()
+# def get_retrieval_stats():
+#     return retriever.get_stats()
 
 
 def chat(user_id: str, article_id: str, query: str):
