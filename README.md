@@ -83,7 +83,7 @@ A modern blog platform that combines traditional reading with AI-powered chat in
 1. **Local Testing**: Develop and test prompts locally
 2. **Version Control**: Use the versioning script when satisfied
    ```bash
-   python api/ai_core/prompt_version.py
+   python api/ai_core/version_prompt.py
    ```
 3. **Deployment**: Deploy using Docker or manual methods
 

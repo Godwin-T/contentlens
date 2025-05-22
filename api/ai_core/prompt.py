@@ -2,14 +2,12 @@ import os
 import hashlib
 from dotenv import load_dotenv
 from promptlayer import PromptLayer
-
-
 from langchain.prompts import PromptTemplate, ChatPromptTemplate
 
 load_dotenv()
 
 api_key = os.getenv("PROMPT_LAYER_API_KEY")
-pl_client = PromptLayer(api_key="pl_0da568cdc2c67d1b0e81fe8937296290")
+pl_client = PromptLayer(api_key=api_key)
 
 # Create a cache for template hashes to track changes
 template_cache = {}

@@ -3,7 +3,7 @@
 from unittest.mock import MagicMock, patch
 
 from api.v1.models.blog import BlogPost
-from api.v1.schemas.blog import BlogPostCreate
+from api.v1.schemas.blog_schema import BlogPostCreate
 from api.v1.services.blog_service import get_post_by_id, get_all_posts, create_blog_post
 
 
