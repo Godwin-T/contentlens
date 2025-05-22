@@ -20,6 +20,7 @@ def read_item(q: str, neural: bool = True):
         else text_searcher.search(query=q)
     }
 
+
 def chat(user_id: str, article_id: str, query: str):
     response = chatbot.chat(user_id, article_id, query)
     return response["answer"], response["chat_history"]

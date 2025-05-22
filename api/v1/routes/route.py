@@ -30,7 +30,6 @@ def get_blog_post(post_id: int):
     "/addpost", response_model=BlogPostResponse, dependencies=[Depends(verify_admin)]
 )
 def create_blog(blog: BlogPostCreate):
-    
     new_post = create_blog_post(blog)
     return new_post
 

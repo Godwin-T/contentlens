@@ -1,0 +1,13 @@
+repos:
+  # Python code formatter
+  - repo: https://github.com/psf/black
+    rev: 23.12.1  # Use latest stable or pin to specific version
+    hooks:
+      - id: black
+        language_version: python3
+
+
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.4.0
+    hooks:
+      - id: debug-statements

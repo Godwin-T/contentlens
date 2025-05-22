@@ -39,8 +39,6 @@ def create_blog_post(blog: BlogPostCreate):
     db.commit()
     db.refresh(new_post)
     db.close()
-    data = {"content": new_post.content,
-        "id": new_post.id,
-        "title": new_post.title}
+    data = {"content": new_post.content, "id": new_post.id, "title": new_post.title}
     upload_single_embeddings(data)
     return new_post

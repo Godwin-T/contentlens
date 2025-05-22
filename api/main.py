@@ -1,6 +1,6 @@
 # app/main.py
 from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware  
+from fastapi.middleware.cors import CORSMiddleware
 from api.v1.routes import route
 from api.db.database import Base, engine
 
@@ -9,9 +9,7 @@ app = FastAPI(title="Blog API", description="Public blog viewing API", version="
 # Set up CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "*"
-    ], 
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

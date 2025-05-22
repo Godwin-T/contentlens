@@ -148,27 +148,28 @@
 
 import os.path
 import asyncio
-from tqdm.asyncio import tqdm as async_tqdm 
+from tqdm.asyncio import tqdm as async_tqdm
 from qdrant_client import QdrantClient, models
 from tqdm import tqdm
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from api.ai_core.config import (
-        QDRANT_URL,
-        QDRANT_API_KEY,
-        COLLECTION_NAME,
-        EMBEDDINGS_MODEL,
-    )
+    QDRANT_URL,
+    QDRANT_API_KEY,
+    COLLECTION_NAME,
+    EMBEDDINGS_MODEL,
+)
 from api.db.database import SessionLocal
 from api.v1.models.blog import BlogPost
 
-def get_client():
 
+def get_client():
     client = QdrantClient(
         url=QDRANT_URL,
         api_key=QDRANT_API_KEY,
     )
     client.set_model(EMBEDDINGS_MODEL)
     return client
+
 
 def get_all_posts():
     """Fetch all blog posts"""
@@ -182,6 +183,7 @@ def get_all_posts():
 
     return posts
 
+
 def process_embeddings(config: dict):
     """
     Uploads or updates embeddings in Qdrant using provided config.
@@ -194,13 +196,12 @@ def process_embeddings(config: dict):
             - embeddings_model
             - get_content_fn (function returning list of objects with .id, .title, .content)
     """
-    
+
     client = get_client()
     # Check if collection exists
     collections = client.get_collections()
     collection_exists = any(
-        collection.name == COLLECTION_NAME
-        for collection in collections.collections
+        collection.name == COLLECTION_NAME for collection in collections.collections
     )
 
     # Get content (e.g., blog posts)
@@ -224,13 +225,15 @@ def process_embeddings(config: dict):
         for i, chunk in enumerate(chunks):
             chunk_id += 1
             all_chunks.append(chunk)
-            all_metadata.append({
-                "original_id": item.id,
-                "title": item.title,
-                "chunk_index": i,
-                "chunk_count": len(chunks),
-                "page_content": chunk,
-            })
+            all_metadata.append(
+                {
+                    "original_id": item.id,
+                    "title": item.title,
+                    "chunk_index": i,
+                    "chunk_count": len(chunks),
+                    "page_content": chunk,
+                }
+            )
             all_ids.append(chunk_id)
 
     if not collection_exists:
@@ -271,7 +274,8 @@ def process_embeddings(config: dict):
     else:
         try:
             existing_ids = set(
-                p.id for p in client.scroll(
+                p.id
+                for p in client.scroll(
                     collection_name=COLLECTION_NAME,
                     limit=100000,
                 )[0]
@@ -280,8 +284,10 @@ def process_embeddings(config: dict):
             print(f"Error retrieving existing records: {e}")
             existing_ids = set()
 
-        new_indices = [i for i, id_val in enumerate(all_ids) if id_val not in existing_ids]
-        
+        new_indices = [
+            i for i, id_val in enumerate(all_ids) if id_val not in existing_ids
+        ]
+
         if new_indices:
             new_chunks = [all_chunks[i] for i in new_indices]
             new_metadata = [all_metadata[i] for i in new_indices]
@@ -298,9 +304,9 @@ def process_embeddings(config: dict):
         else:
             print("No new records to add.")
 
+
 # Wrapper for existing use case
 def upload_embeddings():
-
     blogposts = get_all_posts()
     if blogposts:
         config = {
@@ -310,10 +316,11 @@ def upload_embeddings():
     else:
         print("No records to add.")
 
+
 async def upload_single_embeddings(new_data):
     # Run blocking get_client in a separate thread
     client = await asyncio.to_thread(get_client)
-    
+
     text_splitter = RecursiveCharacterTextSplitter(
         chunk_size=1000,
         chunk_overlap=100,
@@ -335,13 +342,15 @@ async def upload_single_embeddings(new_data):
 
     new_metadata = []
     for i, chunk in zip(new_ids, chunks):
-        new_metadata.append({
-            "original_id": new_data["id"],
-            "title": new_data["title"],
-            "chunk_index": i,
-            "chunk_count": len(chunks),
-            "page_content": chunk,
-        })
+        new_metadata.append(
+            {
+                "original_id": new_data["id"],
+                "title": new_data["title"],
+                "chunk_index": i,
+                "chunk_count": len(chunks),
+                "page_content": chunk,
+            }
+        )
 
     # Add (blocking) in thread
     await asyncio.to_thread(
@@ -356,5 +365,5 @@ async def upload_single_embeddings(new_data):
     print(f"Added {len(new_ids)} new chunked records to {COLLECTION_NAME}")
 
 
-if __name__== "__main__":
+if __name__ == "__main__":
     upload_embeddings()

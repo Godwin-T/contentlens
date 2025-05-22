@@ -49,12 +49,18 @@ def test_get_all_posts_returns_list():
 
 
 def test_create_blog_post():
-    blog_data = BlogPostCreate(title="New Blog", content="New Content",
-                               description="A short summary of the post.",
-                               author="John Doe", published="true", readTime="5 min",
-                               slug="my-first-blog-post", category="Technology",
-                               image="https://example.com/image.jpg") 
-    
+    blog_data = BlogPostCreate(
+        title="New Blog",
+        content="New Content",
+        description="A short summary of the post.",
+        author="John Doe",
+        published="true",
+        readTime="5 min",
+        slug="my-first-blog-post",
+        category="Technology",
+        image="https://example.com/image.jpg",
+    )
+
     mock_new_post = BlogPost(
         id=1,
         title=blog_data.title,
@@ -65,22 +71,20 @@ def test_create_blog_post():
         readTime=blog_data.readTime,
         slug=blog_data.slug,
         category=blog_data.category,
-        image=blog_data.image
-
+        image=blog_data.image,
     )
 
     with patch("api.v1.services.blog_service.SessionLocal") as mock_session_local:
+        mock_db = MagicMock()
+        mock_session_local.return_value = mock_db
 
-            mock_db = MagicMock()
-            mock_session_local.return_value = mock_db
+        # mimic .refresh() populating the new_post object
+        def refresh_side_effect(post_obj):
+            post_obj.id = mock_new_post.id
 
-            # mimic .refresh() populating the new_post object
-            def refresh_side_effect(post_obj):
-                post_obj.id = mock_new_post.id
+        mock_db.refresh.side_effect = refresh_side_effect
 
-            mock_db.refresh.side_effect = refresh_side_effect
+        result = create_blog_post(blog_data)
 
-            result = create_blog_post(blog_data)
-
-            assert result.title == "New Blog"
-            assert result.content == "New Content"
+        assert result.title == "New Blog"
+        assert result.content == "New Content"
